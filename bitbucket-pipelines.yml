@@ -1,10 +1,10 @@
 pipelines:
   default:
-    - step:
-        name: Install Dependencies
-        image: node:18
-        script:
-          - npm install
+    # - step:
+    #     name: Install Dependencies
+    #     image: node:18
+    #     script:
+    #       - npm install
 
     - step:
         name: Semgrep Scan
