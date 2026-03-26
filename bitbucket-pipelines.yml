@@ -83,7 +83,7 @@ pipelines:
     - step:
         name: AccuKnox Scan
         script:
-          - pipe: accu-knox/scan:2.0.0
+          - pipe: accu-knox/scan:2.1.0
             variables:
               SCAN_TYPE: SAST
               ACCUKNOX_TOKEN: ${ACCUKNOX_TOKEN}
