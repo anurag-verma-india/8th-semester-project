@@ -1,0 +1,13 @@
+image: node:18
+
+pipelines:
+  default:
+    - step:
+        name: Dummy CI Run
+        script:
+          - npm install
+          - echo "CI pipeline executed successfully"
+
+
+
+
