@@ -10,6 +10,6 @@ pipelines:
         name: Semgrep Scan
         image: semgrep/semgrep:latest
         script:
-          - semgrep scan --config "p/default" --json --output semgrep-results.json
+          - semgrep scan . --config "p/default" --json --output semgrep-results.json
         artifacts:
           - semgrep-results.json
