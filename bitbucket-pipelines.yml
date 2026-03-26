@@ -1,77 +1,91 @@
-definitions:
-  caches:
-    trivy-cache: /root/.cache/trivy
-
+# ----------------------------------------
+# definitions:
+#   caches:
+#     trivy-cache: /root/.cache/trivy
+# 
+# pipelines:
+#   default:
+# 
+# #    # 🔹 Semgrep (SAST)
+# #    - step:
+# #        name: Semgrep Scan
+# #        image: semgrep/semgrep:latest
+# #        script:
+# #          - semgrep scan . --config "p/default" --json --output semgrep-results.json # #        artifacts:
+# #          - semgrep-results.json
+# #
+# #    # 🔹 Syft + Grype (SBOM + vuln scan)
+# #    - step:
+# #        name: SBOM + Vulnerability Scan
+# #        image: alpine:3.19
+# #        script:
+# #          - apk add --no-cache curl
+# #
+# #          # Install Syft
+# #          - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh
+# #
+# #          # Install Grype
+# #          - curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh
+# #
+# #          # Generate SBOM
+# #          - ./bin/syft dir:. -o json > sbom.json
+# #
+# #          # Scan using SBOM
+# #          - ./bin/grype sbom:sbom.json -o json > grype-results.json
+# #
+# #        artifacts:
+# #          - sbom.json
+# #          - grype-results.json
+# 
+#     # 🔹 Trivy (with cache)
+#     - step:
+#         name: Trivy Scan
+#         image: alpine:3.19
+#         caches:
+#           - trivy-cache
+#         script:
+#           - apk add --no-cache curl
+# 
+#           # Install Trivy
+#           - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+# 
+#           # Run scan
+#           - ./bin/trivy fs . --format json --output trivy-results.json
+# 
+#         artifacts:
+#           - trivy-results.json
+# 
+# #    # 🔹 Hadolint (Dockerfile lint)
+# #    - step:
+# #        name: Hadolint Scan
+# #        image: alpine:3.19
+# #        script:
+# #          - apk add --no-cache curl
+# #          - curl -L -o hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+# #          - chmod +x hadolint
+# #          - ./hadolint Dockerfile -f json > hadolint-results.json || true
+# #        artifacts:
+# #          - hadolint-results.json
+# #
+# #    # 🔹 OWASP ZAP (DAST)
+# #    - step:
+# #        name: OWASP ZAP Scan
+# #        image: zaproxy/zap-stable
+# #        script:
+# #          - zap-baseline.py -t http://example.com -J zap-report.json || true
+# #        artifacts:
+# #          - zap-report.json
+# 
+# 
+# ------------------------------------
 pipelines:
   default:
-
-#    # 🔹 Semgrep (SAST)
-#    - step:
-#        name: Semgrep Scan
-#        image: semgrep/semgrep:latest
-#        script:
-#          - semgrep scan . --config "p/default" --json --output semgrep-results.json
-#        artifacts:
-#          - semgrep-results.json
-#
-#    # 🔹 Syft + Grype (SBOM + vuln scan)
-#    - step:
-#        name: SBOM + Vulnerability Scan
-#        image: alpine:3.19
-#        script:
-#          - apk add --no-cache curl
-#
-#          # Install Syft
-#          - curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh
-#
-#          # Install Grype
-#          - curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh
-#
-#          # Generate SBOM
-#          - ./bin/syft dir:. -o json > sbom.json
-#
-#          # Scan using SBOM
-#          - ./bin/grype sbom:sbom.json -o json > grype-results.json
-#
-#        artifacts:
-#          - sbom.json
-#          - grype-results.json
-
-    # 🔹 Trivy (with cache)
     - step:
-        name: Trivy Scan
-        image: alpine:3.19
-        caches:
-          - trivy-cache
+        name: AccuKnox Scan
         script:
-          - apk add --no-cache curl
-
-          # Install Trivy
-          - curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-
-          # Run scan
-          - ./bin/trivy fs . --format json --output trivy-results.json
-
-        artifacts:
-          - trivy-results.json
-
-#    # 🔹 Hadolint (Dockerfile lint)
-#    - step:
-#        name: Hadolint Scan
-#        image: alpine:3.19
-#        script:
-#          - apk add --no-cache curl
-#          - curl -L -o hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
-#          - chmod +x hadolint
-#          - ./hadolint Dockerfile -f json > hadolint-results.json || true
-#        artifacts:
-#          - hadolint-results.json
-#
-#    # 🔹 OWASP ZAP (DAST)
-#    - step:
-#        name: OWASP ZAP Scan
-#        image: zaproxy/zap-stable
-#        script:
-#          - zap-baseline.py -t http://example.com -J zap-report.json || true
-#        artifacts:
-#          - zap-report.json
+          - pipe: accu-knox/scan:2.0.0
+            variables:
+              SCAN_TYPE: SAST
+              ACCUKNOX_TOKEN: ${ACCUKNOX_TOKEN}
+              ACCUKNOX_ENDPOINT: ${ACCUKNOX_ENDPOINT}
+              ACCUKNOX_LABEL: ${ACCUKNOX_LABEL}
