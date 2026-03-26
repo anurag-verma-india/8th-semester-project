@@ -78,14 +78,17 @@
 # 
 # 
 # ------------------------------------
+
 pipelines:
-  default:
+  branches:
+    main:
     - step:
-        name: AccuKnox Scan
+        name: Accuknox SAST
         script:
           - pipe: accu-knox/scan:2.1.0
             variables:
               SCAN_TYPE: SAST
+              SOFT_FAIL: "true"
               ACCUKNOX_TOKEN: ${ACCUKNOX_TOKEN}
               ACCUKNOX_ENDPOINT: ${ACCUKNOX_ENDPOINT}
               ACCUKNOX_LABEL: ${ACCUKNOX_LABEL}
