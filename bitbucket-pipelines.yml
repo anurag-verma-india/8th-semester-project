@@ -1,11 +1,7 @@
 pipelines:
   default:
-    # - step:
-    #     name: Install Dependencies
-    #     image: node:18
-    #     script:
-    #       - npm install
 
+    # 🔹 Semgrep (SAST)
     - step:
         name: Semgrep Scan
         image: semgrep/semgrep:latest
@@ -13,3 +9,39 @@ pipelines:
           - semgrep scan . --config "p/default" --json --output semgrep-results.json
         artifacts:
           - semgrep-results.json
+
+    # 🔹 Syft (SBOM generation)
+    - step:
+        name: Generate SBOM (Syft)
+        image: anchore/syft:latest
+        script:
+          - syft dir:. -o json > sbom.json
+        artifacts:
+          - sbom.json
+
+    # 🔹 Grype (vulnerability scan)
+    - step:
+        name: Grype Scan
+        image: anchore/grype:latest
+        script:
+          - grype sbom:sbom.json -o json > grype-results.json
+        artifacts:
+          - grype-results.json
+
+    # 🔹 Hadolint (Dockerfile lint)
+    - step:
+        name: Hadolint Scan
+        image: hadolint/hadolint:latest
+        script:
+          - hadolint Dockerfile -f json > hadolint-results.json || true
+        artifacts:
+          - hadolint-results.json
+
+    # 🔹 OWASP ZAP (DAST - baseline scan)
+    - step:
+        name: OWASP ZAP Scan
+        image: zaproxy/zap-stable
+        script:
+          - zap-baseline.py -t http://example.com -J zap-report.json || true
+        artifacts:
+          - zap-report.json
