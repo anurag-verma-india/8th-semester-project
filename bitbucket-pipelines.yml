@@ -1,13 +1,15 @@
-image: node:18
-
 pipelines:
   default:
     - step:
-        name: Dummy CI Run
+        name: Install Dependencies
+        image: node:18
         script:
           - npm install
-          - echo "CI pipeline executed successfully"
 
-
-
-
+    - step:
+        name: Semgrep Scan
+        image: semgrep/semgrep:latest
+        script:
+          - semgrep scan --config "p/default" --json --output semgrep-results.json
+        artifacts:
+          - semgrep-results.json
