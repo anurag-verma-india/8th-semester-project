@@ -12,47 +12,41 @@ pipelines:
 #              ACCUKNOX_TOKEN: ${ACCUKNOX_TOKEN}
 #              ACCUKNOX_ENDPOINT: ${ACCUKNOX_ENDPOINT}
 #              ACCUKNOX_LABEL: ${ACCUKNOX_LABEL}
-# ----------------------------------
+
+# ---------------------------------- 
+# modified container scanning, building image uploading then scanning after pulling
+# built and uploaded locally, to save compute minutes on bitbucket
 #    - step:
 #        name: Container Scan
-#        services:
-#          - docker
+#        ## services:
+#        ##   - docker
 #        script:
-#          - export IMAGE_NAME="bitbucket"
-#          - export TAG="test"
-#          - docker build -t $IMAGE_NAME:$TAG .
+#          ## - export IMAGE_NAME="your-dockerhub-username/bitbucket"
+#          ## - export TAG="test"
+
+#          ## - docker build -t $IMAGE_NAME:$TAG .
+#          ## - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#          ## - docker push $IMAGE_NAME:$TAG
+#          - export IMAGE_NAME="anuragvermaindia/node-todo-cicd"
+#          - export TAG="latest"
+
 #          - pipe: accu-knox/scan:2.1.0
 #            variables:
 #              SCAN_TYPE: CONTAINER
-#              SOFT_FAIL: "true"
 #              IMAGE_NAME: $IMAGE_NAME
 #              TAG: $TAG
+#              SOFT_FAIL: "true"
 #              ACCUKNOX_TOKEN: ${ACCUKNOX_TOKEN}
 #              ACCUKNOX_ENDPOINT: ${ACCUKNOX_ENDPOINT}
 #              ACCUKNOX_LABEL: ${ACCUKNOX_LABEL}
 
-# ----------------------------------
     - step:
-        name: Container Scan
-        # services:
-        #   - docker
+        name: AccuKnox Secret Scan
         script:
-          # - export IMAGE_NAME="your-dockerhub-username/bitbucket"
-          # - export TAG="test"
-
-          # - docker build -t $IMAGE_NAME:$TAG .
-          # - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-          # - docker push $IMAGE_NAME:$TAG
-          - export IMAGE_NAME="anuragvermaindia/node-todo-cicd"
-          - export TAG="latest"
-
           - pipe: accu-knox/scan:2.1.0
             variables:
-              SCAN_TYPE: CONTAINER
-              IMAGE_NAME: $IMAGE_NAME
-              TAG: $TAG
+              SCAN_TYPE: SECRET
               SOFT_FAIL: "true"
               ACCUKNOX_TOKEN: ${ACCUKNOX_TOKEN}
               ACCUKNOX_ENDPOINT: ${ACCUKNOX_ENDPOINT}
               ACCUKNOX_LABEL: ${ACCUKNOX_LABEL}
-
