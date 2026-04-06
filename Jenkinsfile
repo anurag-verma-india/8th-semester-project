@@ -103,7 +103,7 @@ pipeline {
                                 return
                             fi
                             echo "Uploading $FILE as '$SCAN_TYPE'..."
-                            curl -s -o /dev/null -w "%{http_code}" -X POST \
+                            curl -s -o /tmp/defectdojo-response.txt -w "%{http_code}" -X POST \
                                 "${DD_URL}/api/v2/import-scan/" \
                                 -H "Authorization: Token ${DD_API_KEY}" \
                                 -F "scan_type=${SCAN_TYPE}" \
@@ -122,6 +122,10 @@ pipeline {
                         upload "Trivy Scan"                "$REPORT_DIR/trivy-fs.json"
                         upload "Trivy Scan"                "$REPORT_DIR/trivy-image.json"
                         upload "Anchore Grype"             "$REPORT_DIR/grype.json"
+                    '''
+
+                    sh '''
+                    cat /tmp/defectdojo-response.txt
                     '''
                 }
             }
