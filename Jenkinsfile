@@ -34,7 +34,7 @@ pipeline {
         stage('Run Hadolint (Dockerfile scan)') {
             steps {
                 sh '''
-                    hadolint Dockerfile > $REPORT_DIR/hadolint.txt || true
+                    hadolint -f json Dockerfile > $REPORT_DIR/hadolint.json || true
                 '''
             }
         }
@@ -84,6 +84,46 @@ pipeline {
                 sh '''
                     trivy image $IMAGE_NAME --format json --output $REPORT_DIR/trivy-image.json || true
                 '''
+            }
+        }
+
+        stage('Upload to DefectDojo') {
+            steps {
+                withCredentials([string(credentialsId: 'defect-dojo-api-key-agent43', variable: 'DD_API_KEY')]) {
+                    sh '''
+                        DD_URL="http://192.168.56.43:8085"
+                        DD_PRODUCT="node-todo"
+                        DD_ENGAGEMENT="Build-${BUILD_NUMBER}"
+
+                        upload() {
+                            SCAN_TYPE="$1"
+                            FILE="$2"
+                            if [ ! -s "$FILE" ]; then
+                                echo "Skipping $FILE (empty or missing)"
+                                return
+                            fi
+                            echo "Uploading $FILE as '$SCAN_TYPE'..."
+                            curl -s -o /dev/null -w "%{http_code}" -X POST \
+                                "${DD_URL}/api/v2/import-scan/" \
+                                -H "Authorization: Token ${DD_API_KEY}" \
+                                -F "scan_type=${SCAN_TYPE}" \
+                                -F "file=@${FILE}" \
+                                -F "product_name=${DD_PRODUCT}" \
+                                -F "engagement_name=${DD_ENGAGEMENT}" \
+                                -F "auto_create_context=true" \
+                                -F "active=true" \
+                                -F "verified=false" \
+                                -F "close_old_findings=false" && echo " -> $FILE uploaded"
+                        }
+
+                        upload "Hadolint Dockerfile check" "$REPORT_DIR/hadolint.json"
+                        upload "Semgrep JSON Report"        "$REPORT_DIR/semgrep.json"
+                        upload "Gitleaks Scan"             "$REPORT_DIR/gitleaks.json"
+                        upload "Trivy Scan"                "$REPORT_DIR/trivy-fs.json"
+                        upload "Trivy Scan"                "$REPORT_DIR/trivy-image.json"
+                        upload "Anchore Grype"             "$REPORT_DIR/grype.json"
+                    '''
+                }
             }
         }
     }
