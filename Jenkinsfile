@@ -111,32 +111,39 @@ pipeline {
                         }
                     }
                 }
-
-                stage('Syft SBOM') {
-                    steps {
-                        // Informational only
-                        sh 'syft . -o json > $REPORT_DIR/syft-sbom.json || true'
-                    }
-                }
-
-                stage('Grype') {
+                stage('Syft SBOM + Grype Scanning') {
                     steps {
                         script {
                             /*
-                             Severity Policy:
-                             - FAIL on: HIGH, CRITICAL
-                             */
+                            Severity Policy:
+                            - FAIL on: HIGH, CRITICAL (via Grype)
+                            */
+
                             def status = sh(
                                 script: '''
+                                    syft . -o syft-json > $REPORT_DIR/syft-sbom.json
+                                    SYFT_STATUS=$?
+                            
+                                    if [ ! -s "$REPORT_DIR/syft-sbom.json" ]; then
+                                      echo "SBOM missing or empty"
+                                      exit 1
+                                    fi
+                            
                                     grype sbom:$REPORT_DIR/syft-sbom.json \
                                       --fail-on high \
                                       --add-cpes-if-none \
                                       -o json > $REPORT_DIR/grype.json
+                                    GRYPE_STATUS=$?
+                            
+                                    if [ $SYFT_STATUS -ne 0 ] || [ $GRYPE_STATUS -ne 0 ]; then
+                                      exit 1
+                                    fi
                                 ''',
                                 returnStatus: true
                             )
+
                             if (status != 0) {
-                                env.SECURITY_FAILED = 'true'
+                                env.SECURITY_FAILED = "true"
                             }
                         }
                     }
