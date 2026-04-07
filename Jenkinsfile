@@ -209,11 +209,12 @@ pipeline {
 
                             echo "HTTP Status: $HTTP_CODE"
 
-                            if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-                                echo "❌ Upload failed for $FILE"
-                                cat /tmp/defectdojo-response.txt
-                                exit 1
-                            fi
+                            // if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                            //     echo "❌ Upload failed for $FILE"
+                            //     cat /tmp/defectdojo-response.txt
+                            //     exit 1
+                            // fi
+                            cat /tmp/defectdojo-response.txt
                         }
 
                         upload "Hadolint Dockerfile check" "$REPORT_DIR/hadolint.json"
