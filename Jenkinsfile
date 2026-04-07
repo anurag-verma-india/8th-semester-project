@@ -174,6 +174,37 @@ pipeline {
                         }
                     }
                 }
+
+                stage('SonarQube') {
+                    steps {
+                        withCredentials([string(credentialsId: 'sonarqube-on-43', variable: 'SONAR_TOKEN')]) {
+                            script {
+                                /*
+                                 Severity Policy:
+                                 - FAIL on: scanner exit code != 0 (analysis errors)
+                                 */
+                                def status = sh(
+                                    script: '''
+                                        sonar-scanner \
+                                          -Dsonar.projectKey=node-todo \
+                                          -Dsonar.sources=. \
+                                          -Dsonar.host.url=http://192.168.56.43:9000 \
+                                          -Dsonar.token=$SONAR_TOKEN
+
+                                        # Export issues from SonarQube API for DefectDojo upload
+                                        curl -s -u "${SONAR_TOKEN}:" \
+                                          "http://192.168.56.43:9000/api/issues/search?componentKeys=node-todo&resolved=false&ps=500" \
+                                          > $REPORT_DIR/sonarqube.json
+                                    ''',
+                                    returnStatus: true
+                                )
+                                if (status != 0) {
+                                    sh 'touch $REPORT_DIR/.security_failed'
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -250,6 +281,7 @@ pipeline {
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-fs.json"    "Trivy Filesystem"
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-image.json" "Trivy Image"
                         upload "Anchore Grype"              "$REPORT_DIR/grype.json"
+                        upload "SonarQube Scan"             "$REPORT_DIR/sonarqube.json"
                     '''
                 }
             }
