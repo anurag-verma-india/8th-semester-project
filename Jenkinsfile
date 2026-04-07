@@ -186,16 +186,29 @@ pipeline {
                         # Stable engagement name so reimport can match against previous scans
                         DD_ENGAGEMENT="CI-Pipeline"
 
+                        # SCAN_TYPE: DefectDojo parser type
+                        # FILE:      path to the report
+                        # TEST_TITLE: optional — required when the same scan_type is uploaded
+                        #             more than once (e.g. Trivy FS vs Trivy Image).
+                        #             DefectDojo uses this to keep them as separate tests so
+                        #             reimport compares FS-vs-FS and image-vs-image independently,
+                        #             instead of marking image-only findings as mitigated.
                         upload() {
                             SCAN_TYPE="$1"
                             FILE="$2"
+                            TEST_TITLE="${3:-}"
 
                             if [ ! -s "$FILE" ]; then
                                 echo "Skipping $FILE (empty or missing)"
                                 return
                             fi
 
-                            echo "Uploading $FILE as '$SCAN_TYPE'..."
+                            echo "Uploading $FILE as '$SCAN_TYPE'${TEST_TITLE:+ (test_title: $TEST_TITLE)}..."
+
+                            TITLE_PARAM=""
+                            if [ -n "$TEST_TITLE" ]; then
+                                TITLE_PARAM="-F test_title=${TEST_TITLE}"
+                            fi
 
                             # reimport-scan deduplicates: ignores existing findings, closes resolved ones,
                             # reopens reintroduced ones — prevents duplicate findings across builds
@@ -209,7 +222,8 @@ pipeline {
                                 -F "auto_create_context=true" \
                                 -F "active=true" \
                                 -F "verified=false" \
-                                -F "close_old_findings=true")
+                                -F "close_old_findings=true" \
+                                $TITLE_PARAM)
 
                             echo "HTTP Status: $HTTP_CODE"
 
@@ -221,11 +235,11 @@ pipeline {
                         }
 
                         upload "Hadolint Dockerfile check" "$REPORT_DIR/hadolint.json"
-                        upload "Semgrep JSON Report" "$REPORT_DIR/semgrep.json"
-                        upload "Gitleaks Scan" "$REPORT_DIR/gitleaks.json"
-                        upload "Trivy Scan" "$REPORT_DIR/trivy-fs.json"
-                        upload "Trivy Scan" "$REPORT_DIR/trivy-image.json"
-                        upload "Anchore Grype" "$REPORT_DIR/grype.json"
+                        upload "Semgrep JSON Report"        "$REPORT_DIR/semgrep.json"
+                        upload "Gitleaks Scan"              "$REPORT_DIR/gitleaks.json"
+                        upload "Trivy Scan"                 "$REPORT_DIR/trivy-fs.json"    "Trivy Filesystem"
+                        upload "Trivy Scan"                 "$REPORT_DIR/trivy-image.json" "Trivy Image"
+                        upload "Anchore Grype"              "$REPORT_DIR/grype.json"
                     '''
                 }
             }
