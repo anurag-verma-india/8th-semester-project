@@ -7,7 +7,12 @@ const express = require('express'),
     app = express(),
     port = 8000
 
-const secret = "mxZaGumbEmP5Tu5VXuZRCjPTRhsaGN30J6v7"
+
+
+
+const other_var = "abcd"
+
+    const secret = "mxZaGumbEmP5Tu5VXuZRCjPTRhsaGN30J6v7"
 
 app.use(bodyParser.urlencoded({
     extended: false
