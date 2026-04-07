@@ -223,8 +223,8 @@ pipeline {
                         upload "Hadolint Dockerfile check" "$REPORT_DIR/hadolint.json"
                         upload "Semgrep JSON Report" "$REPORT_DIR/semgrep.json"
                         upload "Gitleaks Scan" "$REPORT_DIR/gitleaks.json"
-                        upload "Trivy Scan - File system" "$REPORT_DIR/trivy-fs.json"
-                        upload "Trivy Scan - Image" "$REPORT_DIR/trivy-image.json"
+                        upload "Trivy Scan" "$REPORT_DIR/trivy-fs.json"
+                        upload "Trivy Scan" "$REPORT_DIR/trivy-image.json"
                         upload "Anchore Grype" "$REPORT_DIR/grype.json"
                     '''
                 }
