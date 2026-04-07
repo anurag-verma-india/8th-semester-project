@@ -177,28 +177,28 @@ pipeline {
 
                 stage('SonarQube') {
                     steps {
-                        withCredentials([string(credentialsId: 'sonarqube-on-43', variable: 'SONAR_TOKEN')]) {
+                        withSonarQubeEnv('Sonar') {
                             script {
                                 /*
                                  Severity Policy:
                                  - FAIL on: scanner exit code != 0 (analysis errors)
                                  */
-                                def status = sh(
-                                    script: '''
-                                        sonar-scanner \
+                                def scannerHome = tool 'sonar-scanner'
+                                def scanStatus = sh(
+                                    script: """
+                                        ${scannerHome}/bin/sonar-scanner \
                                           -Dsonar.projectKey=node-todo \
-                                          -Dsonar.sources=. \
-                                          -Dsonar.host.url=http://192.168.56.43:9000 \
-                                          -Dsonar.token=$SONAR_TOKEN
-
-                                        # Export issues from SonarQube API for DefectDojo upload
-                                        curl -s -u "${SONAR_TOKEN}:" \
-                                          "http://192.168.56.43:9000/api/issues/search?componentKeys=node-todo&resolved=false&ps=500" \
-                                          > $REPORT_DIR/sonarqube.json
-                                    ''',
+                                          -Dsonar.sources=.
+                                    """,
                                     returnStatus: true
                                 )
-                                if (status != 0) {
+                                // Always export issues for DefectDojo regardless of scan result
+                                sh """
+                                    curl -s -u "\${SONAR_AUTH_TOKEN}:" \
+                                      "\${SONAR_HOST_URL}/api/issues/search?componentKeys=node-todo&resolved=false&ps=500" \
+                                      > \$REPORT_DIR/sonarqube.json
+                                """
+                                if (scanStatus != 0) {
                                     sh 'touch $REPORT_DIR/.security_failed'
                                 }
                             }
