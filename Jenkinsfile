@@ -205,25 +205,35 @@ pipeline {
 
                             echo "Uploading $FILE as '$SCAN_TYPE'${TEST_TITLE:+ (test_title: $TEST_TITLE)}..."
 
-                            TITLE_PARAM=""
-                            if [ -n "$TEST_TITLE" ]; then
-                                TITLE_PARAM="-F test_title=${TEST_TITLE}"
-                            fi
-
                             # reimport-scan deduplicates: ignores existing findings, closes resolved ones,
-                            # reopens reintroduced ones — prevents duplicate findings across builds
-                            HTTP_CODE=$(curl -s -o /tmp/defectdojo-response.txt -w "%{http_code}" -X POST \
-                                "${DD_URL}/api/v2/reimport-scan/" \
-                                -H "Authorization: Token ${DD_API_KEY}" \
-                                -F "scan_type=${SCAN_TYPE}" \
-                                -F "file=@${FILE}" \
-                                -F "product_name=${DD_PRODUCT}" \
-                                -F "engagement_name=${DD_ENGAGEMENT}" \
-                                -F "auto_create_context=true" \
-                                -F "active=true" \
-                                -F "verified=false" \
-                                -F "close_old_findings=true" \
-                                $TITLE_PARAM)
+                            # reopens reintroduced ones - prevents duplicate findings across builds.
+                            # test_title is passed via if/else to avoid word-splitting on spaces in the value.
+                            if [ -n "$TEST_TITLE" ]; then
+                                HTTP_CODE=$(curl -s -o /tmp/defectdojo-response.txt -w "%{http_code}" -X POST \
+                                    "${DD_URL}/api/v2/reimport-scan/" \
+                                    -H "Authorization: Token ${DD_API_KEY}" \
+                                    -F "scan_type=${SCAN_TYPE}" \
+                                    -F "file=@${FILE}" \
+                                    -F "product_name=${DD_PRODUCT}" \
+                                    -F "engagement_name=${DD_ENGAGEMENT}" \
+                                    -F "auto_create_context=true" \
+                                    -F "active=true" \
+                                    -F "verified=false" \
+                                    -F "close_old_findings=true" \
+                                    -F "test_title=${TEST_TITLE}")
+                            else
+                                HTTP_CODE=$(curl -s -o /tmp/defectdojo-response.txt -w "%{http_code}" -X POST \
+                                    "${DD_URL}/api/v2/reimport-scan/" \
+                                    -H "Authorization: Token ${DD_API_KEY}" \
+                                    -F "scan_type=${SCAN_TYPE}" \
+                                    -F "file=@${FILE}" \
+                                    -F "product_name=${DD_PRODUCT}" \
+                                    -F "engagement_name=${DD_ENGAGEMENT}" \
+                                    -F "auto_create_context=true" \
+                                    -F "active=true" \
+                                    -F "verified=false" \
+                                    -F "close_old_findings=true")
+                            fi
 
                             echo "HTTP Status: $HTTP_CODE"
 
