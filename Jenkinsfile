@@ -46,13 +46,14 @@ pipeline {
                         script {
                             /*
                              Severity Policy:
-                             - FAIL on: ERROR (treated as HIGH)
+                             - FAIL on: ERROR
                              */
                             def status = sh(
                                 script: '''
                                     semgrep scan \
                                       --config auto \
                                       --severity ERROR \
+                                      --error \
                                       --json > $REPORT_DIR/semgrep.json
                                 ''',
                                 returnStatus: true
@@ -182,7 +183,8 @@ pipeline {
                     sh '''
                         DD_URL="http://192.168.56.43:8085"
                         DD_PRODUCT="node-todo"
-                        DD_ENGAGEMENT="Build-${BUILD_NUMBER}"
+                        # Stable engagement name so reimport can match against previous scans
+                        DD_ENGAGEMENT="CI-Pipeline"
 
                         upload() {
                             SCAN_TYPE="$1"
@@ -195,8 +197,10 @@ pipeline {
 
                             echo "Uploading $FILE as '$SCAN_TYPE'..."
 
+                            # reimport-scan deduplicates: ignores existing findings, closes resolved ones,
+                            # reopens reintroduced ones — prevents duplicate findings across builds
                             HTTP_CODE=$(curl -s -o /tmp/defectdojo-response.txt -w "%{http_code}" -X POST \
-                                "${DD_URL}/api/v2/import-scan/" \
+                                "${DD_URL}/api/v2/reimport-scan/" \
                                 -H "Authorization: Token ${DD_API_KEY}" \
                                 -F "scan_type=${SCAN_TYPE}" \
                                 -F "file=@${FILE}" \
@@ -205,23 +209,22 @@ pipeline {
                                 -F "auto_create_context=true" \
                                 -F "active=true" \
                                 -F "verified=false" \
-                                -F "close_old_findings=false")
+                                -F "close_old_findings=true")
 
                             echo "HTTP Status: $HTTP_CODE"
 
-                            # if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-                            #     echo "Upload failed for $FILE"
-                            #     cat /tmp/defectdojo-response.txt
-                            #     exit 1
-                            # fi
-                            cat /tmp/defectdojo-response.txt
+                            if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                                echo "Upload failed for $FILE"
+                                cat /tmp/defectdojo-response.txt
+                                exit 1
+                            fi
                         }
 
                         upload "Hadolint Dockerfile check" "$REPORT_DIR/hadolint.json"
                         upload "Semgrep JSON Report" "$REPORT_DIR/semgrep.json"
                         upload "Gitleaks Scan" "$REPORT_DIR/gitleaks.json"
-                        upload "Trivy Scan" "$REPORT_DIR/trivy-fs.json"
-                        upload "Trivy Scan" "$REPORT_DIR/trivy-image.json"
+                        upload "Trivy Scan (File system)" "$REPORT_DIR/trivy-fs.json"
+                        upload "Trivy Scan (Image)" "$REPORT_DIR/trivy-image.json"
                         upload "Anchore Grype" "$REPORT_DIR/grype.json"
                     '''
                 }
