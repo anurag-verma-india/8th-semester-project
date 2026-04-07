@@ -4,7 +4,6 @@ pipeline {
     environment {
         REPORT_DIR = 'reports'
         IMAGE_NAME = 'node-app:scan'
-        SECURITY_FAILED = 'false'
 
         // Cache dirs (persist between runs if workspace persists)
         TRIVY_CACHE_DIR = '/tmp/trivy-cache'
@@ -19,6 +18,7 @@ pipeline {
 
                     rm -rf $REPORT_DIR
                     mkdir -p $REPORT_DIR
+                    rm -f $REPORT_DIR/.security_failed
 
                     mkdir -p $TRIVY_CACHE_DIR
                     mkdir -p $GRYPE_DB_CACHE_DIR
@@ -58,7 +58,7 @@ pipeline {
                                 returnStatus: true
                             )
                             if (status != 0) {
-                                env.SECURITY_FAILED = 'true'
+                                sh 'touch $REPORT_DIR/.security_failed'
                             }
                         }
                     }
@@ -81,7 +81,7 @@ pipeline {
                                 returnStatus: true
                             )
                             if (status != 0) {
-                                env.SECURITY_FAILED = 'true'
+                                sh 'touch $REPORT_DIR/.security_failed'
                             }
                         }
                     }
@@ -106,7 +106,7 @@ pipeline {
                                 returnStatus: true
                             )
                             if (status != 0) {
-                                env.SECURITY_FAILED = 'true'
+                                sh 'touch $REPORT_DIR/.security_failed'
                             }
                         }
                     }
@@ -143,7 +143,7 @@ pipeline {
                             )
 
                             if (status != 0) {
-                                env.SECURITY_FAILED = "true"
+                                sh 'touch $REPORT_DIR/.security_failed'
                             }
                         }
                     }
@@ -168,7 +168,7 @@ pipeline {
                                 returnStatus: true
                             )
                             if (status != 0) {
-                                env.SECURITY_FAILED = 'true'
+                                sh 'touch $REPORT_DIR/.security_failed'
                             }
                         }
                     }
@@ -231,10 +231,10 @@ pipeline {
         stage('Final Security Gate') {
             steps {
                 script {
-                    if (env.SECURITY_FAILED == 'true') {
-                        error('❌ High/Critical vulnerabilities or secrets detected!')
+                    if (fileExists("${env.REPORT_DIR}/.security_failed")) {
+                        error('High/Critical vulnerabilities or secrets detected!')
                     } else {
-                        echo '✅ No high/critical vulnerabilities found'
+                        echo 'No high/critical vulnerabilities found'
                     }
                 }
             }
