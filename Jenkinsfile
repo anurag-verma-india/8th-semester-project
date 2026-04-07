@@ -183,10 +183,12 @@ pipeline {
                                  Severity Policy:
                                  - FAIL on: scanner exit code != 0 (analysis errors)
                                  */
-                                def scannerHome = tool 'sonar-scanner'
+                                // def scannerHome = tool 'sonar-scanner'
+                                def scannerHome = tool 'Sonar'
                                 def scanStatus = sh(
                                     script: """
-                                        ${scannerHome}/bin/sonar-scanner \
+                                        # ${scannerHome}/bin/sonar-scanner \
+                                        ${scannerHome}/bin/Sonar \
                                           -Dsonar.projectKey=node-todo \
                                           -Dsonar.sources=.
                                     """,
