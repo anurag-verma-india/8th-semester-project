@@ -8,6 +8,7 @@ pipeline {
         // Cache dirs (persist between runs if workspace persists)
         TRIVY_CACHE_DIR = '/tmp/trivy-cache'
         GRYPE_DB_CACHE_DIR = '/tmp/grype-cache'
+        OWASP_DC_DATA_DIR = '/tmp/owasp-dc-data'
     }
 
     stages {
@@ -22,6 +23,7 @@ pipeline {
 
                     mkdir -p $TRIVY_CACHE_DIR
                     mkdir -p $GRYPE_DB_CACHE_DIR
+                    mkdir -p $OWASP_DC_DATA_DIR
                 '''
             }
         }
@@ -174,6 +176,32 @@ pipeline {
                         }
                     }
                 }
+
+                stage('OWASP Dependency Check') {
+                // not using sentinel file for now 
+                    steps {
+                        /*
+                         Severity Policy:
+                         - FAIL on: CVSS >= 7 (HIGH and above)
+                         */
+                        dependencyCheck(
+                            odcInstallation: 'OWASP-DC',
+                            additionalArguments: """
+                                --scan .
+                                --format JSON
+                                --project node-todo
+                                --failOnCVSS 7
+                            """,
+                            nvdCredentialsId: 'nvd-api-key'
+                        )
+
+                        dependencyCheckPublisher(
+                            pattern: '**/dependency-check-report.xml',
+                            stopBuild: true
+                        )
+                    }
+                }
+                
 
                 stage('SonarQube') {
                     steps {
@@ -346,6 +374,7 @@ pipeline {
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-fs.json"    "Trivy Filesystem"
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-image.json" "Trivy Image"
                         upload "Anchore Grype"              "$REPORT_DIR/grype.json"
+                        upload "Dependency Check Scan"     "$REPORT_DIR/dependency-check-report.json"
                         upload "SonarQube Scan"             "$REPORT_DIR/sonarqube.json"
                         # upload "ZAP Scan"                   "$REPORT_DIR/zap.json"
                     '''
