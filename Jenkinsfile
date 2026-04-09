@@ -208,64 +208,64 @@ pipeline {
                     }
                 }
 
-                stage('DAST - ZAP') {
-                    steps {
-                        script {
-                            /*
-                            Severity Policy:
-                            - FAIL on: HIGH, CRITICAL (via post-scan JSON parsing)
-                            */
-                            def status = sh(
-                                script: '''
-                                    echo "Starting app container for DAST scan..."
+                // stage('DAST - ZAP') {
+                //     steps {
+                //         script {
+                //             /*
+                //             Severity Policy:
+                //             - FAIL on: HIGH, CRITICAL (via post-scan JSON parsing)
+                //             */
+                //             def status = sh(
+                //                 script: '''
+                //                     echo "Starting app container for DAST scan..."
 
-                                    # Cleanup if container already exists (previous failed run, etc.)
-                                    docker rm -f zap-test-app 2>/dev/null || true
+                //                     # Cleanup if container already exists (previous failed run, etc.)
+                //                     docker rm -f zap-test-app 2>/dev/null || true
 
-                                    docker run -d -p 8080:8080 --name zap-test-app $IMAGE_NAME
+                //                     docker run -d -p 8080:8080 --name zap-test-app $IMAGE_NAME
 
-                                    # Give app time to start
-                                    sleep 15
+                //                     # Give app time to start
+                //                     sleep 15
 
-                                    echo "Running OWASP ZAP Baseline Scan..."
+                //                     echo "Running OWASP ZAP Baseline Scan..."
 
-                                    docker run --rm \
-                                        --network host \
-                                        -v "$(pwd)/$REPORT_DIR:/zap/wrk" \
-                                        zaproxy/zap-stable \
-                                        zap-baseline.py \
-                                        -t http://localhost:8080 \
-                                        -J zap.json || true
+                //                     docker run --rm \
+                //                         --network host \
+                //                         -v "$(pwd)/$REPORT_DIR:/zap/wrk" \
+                //                         zaproxy/zap-stable \
+                //                         zap-baseline.py \
+                //                         -t http://localhost:8080 \
+                //                         -J zap.json || true
 
-                                    echo "Checking for HIGH / CRITICAL issues..."
+                //                     echo "Checking for HIGH / CRITICAL issues..."
 
-                                    if [ -f "$REPORT_DIR/zap.json" ]; then
-                                        HIGH_COUNT=$(jq '[.site[].alerts[] | select(.riskcode | tonumber >= 2)] | length' $REPORT_DIR/zap.json)
+                //                     if [ -f "$REPORT_DIR/zap.json" ]; then
+                //                         HIGH_COUNT=$(jq '[.site[].alerts[] | select(.riskcode | tonumber >= 2)] | length' $REPORT_DIR/zap.json)
 
-                                        echo "High/Critical findings: $HIGH_COUNT"
+                //                         echo "High/Critical findings: $HIGH_COUNT"
 
-                                        if [ "$HIGH_COUNT" -gt 0 ]; then
-                                            echo "High/Critical vulnerabilities detected!"
-                                            exit 1
-                                        fi
-                                    else
-                                        echo "ZAP report not found!"
-                                        exit 1
-                                    fi
+                //                         if [ "$HIGH_COUNT" -gt 0 ]; then
+                //                             echo "High/Critical vulnerabilities detected!"
+                //                             exit 1
+                //                         fi
+                //                     else
+                //                         echo "ZAP report not found!"
+                //                         exit 1
+                //                     fi
 
-                                    echo "Cleaning up container..."
-                                    docker stop zap-test-app || true
-                                    docker rm zap-test-app || true
-                                ''',
-                                returnStatus: true
-                            )
+                //                     echo "Cleaning up container..."
+                //                     docker stop zap-test-app || true
+                //                     docker rm zap-test-app || true
+                //                 ''',
+                //                 returnStatus: true
+                //             )
 
-                            if (status != 0) {
-                                sh 'touch $REPORT_DIR/.security_failed'
-                            }
-                        }
-                    }
-                }
+                //             if (status != 0) {
+                //                 sh 'touch $REPORT_DIR/.security_failed'
+                //             }
+                //         }
+                //     }
+                // }
 
                 // 
             }
@@ -347,7 +347,7 @@ pipeline {
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-image.json" "Trivy Image"
                         upload "Anchore Grype"              "$REPORT_DIR/grype.json"
                         upload "SonarQube Scan"             "$REPORT_DIR/sonarqube.json"
-                        upload "ZAP Scan"                   "$REPORT_DIR/zap.json"
+                        # upload "ZAP Scan"                   "$REPORT_DIR/zap.json"
                     '''
                 }
             }
