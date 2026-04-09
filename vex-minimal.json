@@ -1,0 +1,20 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/anuragverma/node-todo-cicd/vex/CVE-2025-7783-minimal",
+  "author": "Admin User (admin)",
+  "timestamp": "2026-04-09T00:00:00Z",
+  "statements": [
+    {
+      "vulnerability": {
+        "@id": "https://www.cve.org/CVERecord?id=CVE-2025-7783",
+        "name": "CVE-2025-7783"
+      },
+      "products": [
+        {
+          "@id": "pkg:npm/form-data@2.5.1"
+        }
+      ],
+      "status": "under_investigation"
+    }
+  ]
+}
