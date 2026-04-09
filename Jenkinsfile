@@ -212,9 +212,11 @@ pipeline {
 
         stage('Upload to DefectDojo') {
             steps {
-                withCredentials([string(credentialsId: 'defect-dojo-api-key-agent43', variable: 'DD_API_KEY')]) {
+                // withCredentials([string(credentialsId: 'defect-dojo-api-key-agent43', variable: 'DD_API_KEY')]) {
+                withCredentials([string(credentialsId: 'defect-dojo-10-81-2-34', variable: 'DD_API_KEY')]) {
                     sh '''
-                        DD_URL="http://192.168.56.43:8085"
+                        # DD_URL="http://192.168.56.43:8085"
+                        DD_URL="http://10.81.2.34"
                         DD_PRODUCT="node-todo"
                         # Stable engagement name so reimport can match against previous scans
                         DD_ENGAGEMENT="CI-Pipeline"
