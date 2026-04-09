@@ -207,6 +207,45 @@ pipeline {
                         }
                     }
                 }
+
+                stage('DAST - ZAP') {
+                    steps {
+                        script {
+                            /*
+                             Severity Policy:
+                             - Informational (can be upgraded to FAIL later)
+                             */
+                            def status = sh(
+                                script: '''
+                                    echo "Starting app container for DAST scan..."
+
+                                    docker run -d -p 8080:8080 --name zap-test-app $IMAGE_NAME
+
+                                    # Give app time to start
+                                    sleep 15
+
+                                    echo "Running OWASP ZAP Baseline Scan..."
+
+                                    docker run --rm --network host owasp/zap2docker-stable \
+                                        zap-baseline.py \
+                                        -t http://localhost:8080 \
+                                        -J $REPORT_DIR/zap.json || true
+
+                                    echo "Cleaning up container..."
+                                    docker stop zap-test-app || true
+                                    docker rm zap-test-app || true
+                                ''',
+                                returnStatus: true
+                            )
+
+                            // Optional: fail gate (enable later if needed)
+                            if (status != 0) {
+                                sh 'touch $REPORT_DIR/.security_failed'
+                            }
+                        }
+                    }
+                }
+                // 
             }
         }
 
@@ -286,6 +325,7 @@ pipeline {
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-image.json" "Trivy Image"
                         upload "Anchore Grype"              "$REPORT_DIR/grype.json"
                         upload "SonarQube Scan"             "$REPORT_DIR/sonarqube.json"
+                        upload "ZAP Scan"                   "$REPORT_DIR/zap.json"
                     '''
                 }
             }
