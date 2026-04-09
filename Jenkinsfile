@@ -219,6 +219,9 @@ pipeline {
                                 script: '''
                                     echo "Starting app container for DAST scan..."
 
+                                    # Cleanup if container already exists (previous failed run, etc.)
+                                    docker rm -f zap-test-app 2>/dev/null || true
+
                                     docker run -d -p 8080:8080 --name zap-test-app $IMAGE_NAME
 
                                     # Give app time to start
