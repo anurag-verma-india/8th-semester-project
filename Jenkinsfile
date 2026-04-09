@@ -212,9 +212,9 @@ pipeline {
                     steps {
                         script {
                             /*
-                             Severity Policy:
-                             - Informational (can be upgraded to FAIL later)
-                             */
+                            Severity Policy:
+                            - FAIL on: HIGH, CRITICAL (via post-scan JSON parsing)
+                            */
                             def status = sh(
                                 script: '''
                                     echo "Starting app container for DAST scan..."
@@ -226,10 +226,29 @@ pipeline {
 
                                     echo "Running OWASP ZAP Baseline Scan..."
 
-                                    docker run --rm --network host zaproxy/zap-stable \
+                                    docker run --rm \
+                                        --network host \
+                                        -v $(pwd)/$REPORT_DIR:/zap/wrk \
+                                        zaproxy/zap-stable \
                                         zap-baseline.py \
                                         -t http://localhost:8080 \
-                                        -J $REPORT_DIR/zap.json || true
+                                        -J zap.json || true
+
+                                    echo "Checking for HIGH / CRITICAL issues..."
+
+                                    if [ -f "$REPORT_DIR/zap.json" ]; then
+                                        HIGH_COUNT=$(jq '[.site[].alerts[] | select(.riskcode | tonumber >= 2)] | length' $REPORT_DIR/zap.json)
+
+                                        echo "High/Critical findings: $HIGH_COUNT"
+
+                                        if [ "$HIGH_COUNT" -gt 0 ]; then
+                                            echo "High/Critical vulnerabilities detected!"
+                                            exit 1
+                                        fi
+                                    else
+                                        echo "ZAP report not found!"
+                                        exit 1
+                                    fi
 
                                     echo "Cleaning up container..."
                                     docker stop zap-test-app || true
@@ -238,13 +257,13 @@ pipeline {
                                 returnStatus: true
                             )
 
-                            // Optional: fail gate (enable later if needed)
                             if (status != 0) {
                                 sh 'touch $REPORT_DIR/.security_failed'
                             }
                         }
                     }
                 }
+
                 // 
             }
         }
