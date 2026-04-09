@@ -226,7 +226,7 @@ pipeline {
 
                                     echo "Running OWASP ZAP Baseline Scan..."
 
-                                    docker run --rm --network host owasp/zap2docker-stable \
+                                    docker run --rm --network host zaproxy/zap-stable \
                                         zap-baseline.py \
                                         -t http://localhost:8080 \
                                         -J $REPORT_DIR/zap.json || true
