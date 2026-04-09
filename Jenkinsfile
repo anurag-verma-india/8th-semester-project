@@ -104,6 +104,7 @@ pipeline {
                                       --severity HIGH,CRITICAL \
                                       --exit-code 1 \
                                       --format json \
+                                      --vex vex.json \
                                       --output $REPORT_DIR/trivy-fs.json
                                 ''',
                                 returnStatus: true
@@ -135,6 +136,7 @@ pipeline {
                                     grype sbom:$REPORT_DIR/syft-sbom.json \
                                       --fail-on high \
                                       --add-cpes-if-none \
+                                      --vex vex.json \
                                       -o json > $REPORT_DIR/grype.json
                                     GRYPE_STATUS=$?
                             
@@ -166,6 +168,7 @@ pipeline {
                                       --severity HIGH,CRITICAL \
                                       --exit-code 1 \
                                       --format json \
+                                      --vex vex.json \
                                       --output $REPORT_DIR/trivy-image.json
                                 ''',
                                 returnStatus: true

@@ -1,0 +1,43 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://github.com/anuragverma/node-todo-cicd/vex/CVE-2025-7783",
+  "author": "Admin User (admin)",
+  "role": "Security Reviewer",
+  "timestamp": "2026-04-09T00:00:00Z",
+  "last_updated": "2026-04-09T00:00:00Z",
+  "version": 1,
+  "statements": [
+    {
+      "timestamp": "2026-04-09T00:00:00Z",
+      "vulnerability": {
+        "@id": "https://www.cve.org/CVERecord?id=CVE-2025-7783",
+        "name": "CVE-2025-7783",
+        "description": "form-data: Unsafe random function in form-data. Use of Insufficiently Random Values (CWE-330) vulnerability allowing HTTP Parameter Pollution (HPP). Affects form-data < 2.5.4, 3.0.0-3.0.3, 4.0.0-4.0.3.",
+        "aliases": [
+          "GHSA-form-data-cve-2025-7783"
+        ]
+      },
+      "products": [
+        {
+          "@id": "pkg:npm/form-data@2.5.1",
+          "identifiers": {
+            "cpe23": "cpe:2.3:a:form-data_project:form-data:2.5.1:*:*:*:*:node.js:*:*"
+          },
+          "subcomponents": [
+            {
+              "@id": "node/node_modules/form-data/package.json"
+            },
+            {
+              "@id": "node/node_modules/form-data/lib/form_data.js"
+            }
+          ]
+        }
+      ],
+      "status": "under_investigation",
+      "impact_statement": "CVSS 9.4 Critical. The vulnerability is in lib/form_data.js where Math.random() is used to generate multipart boundaries, making them predictable. Exploitability in this application depends on whether an attacker can influence or observe multipart boundary values. Impact assessment in progress.",
+      "status_notes": "Finding ID 24 in DefectDojo. Reported by Trivy Scan on 2026-04-09. CWE-330 (Use of Insufficiently Random Values). Fixed versions: 2.5.4, 3.0.4, 4.0.4. Under active investigation to determine exploitability within this application's threat model. Last reviewed 2026-04-09 by Admin User (admin).",
+      "action_statement": "Security team is assessing exploitability. Planned remediation: upgrade form-data to 2.5.4 or later.",
+      "action_statement_date": "2026-04-09T00:00:00Z"
+    }
+  ]
+}
