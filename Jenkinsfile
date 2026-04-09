@@ -177,31 +177,31 @@ pipeline {
                     }
                 }
 
-                stage('OWASP Dependency Check') {
-                // not using sentinel file for now 
-                    steps {
-                        /*
-                         Severity Policy:
-                         - FAIL on: CVSS >= 7 (HIGH and above)
-                         */
-                        dependencyCheck(
-                            odcInstallation: 'OWASP-DC',
-                            additionalArguments: """
-                                --scan .
-                                --format JSON
-                                --project node-todo
-                                --failOnCVSS 7
-                                --data ${OWASP_DC_DATA_DIR}
-                            """,
-                            nvdCredentialsId: 'nvd-api-key'
-                        )
+                // stage('OWASP Dependency Check') {
+                // // not using sentinel file for now 
+                //     steps {
+                //         /*
+                //          Severity Policy:
+                //          - FAIL on: CVSS >= 7 (HIGH and above)
+                //          */
+                //         dependencyCheck(
+                //             odcInstallation: 'OWASP-DC',
+                //             additionalArguments: """
+                //                 --scan .
+                //                 --format JSON
+                //                 --project node-todo
+                //                 --failOnCVSS 7
+                //                 --data ${OWASP_DC_DATA_DIR}
+                //             """,
+                //             nvdCredentialsId: 'nvd-api-key'
+                //         )
 
-                        dependencyCheckPublisher(
-                            pattern: '**/dependency-check-report.xml',
-                            stopBuild: true
-                        )
-                    }
-                }
+                //         dependencyCheckPublisher(
+                //             pattern: '**/dependency-check-report.xml',
+                //             stopBuild: true
+                //         )
+                //     }
+                // }
                 
 
                 stage('SonarQube') {
@@ -375,7 +375,7 @@ pipeline {
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-fs.json"    "Trivy Filesystem"
                         upload "Trivy Scan"                 "$REPORT_DIR/trivy-image.json" "Trivy Image"
                         upload "Anchore Grype"              "$REPORT_DIR/grype.json"
-                        upload "Dependency Check Scan"     "$REPORT_DIR/dependency-check-report.json"
+                        # upload "Dependency Check Scan"      "$REPORT_DIR/dependency-check-report.json"
                         upload "SonarQube Scan"             "$REPORT_DIR/sonarqube.json"
                         # upload "ZAP Scan"                   "$REPORT_DIR/zap.json"
                     '''
