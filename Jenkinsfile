@@ -8,7 +8,7 @@ pipeline {
         // Cache dirs (persist between runs if workspace persists)
         TRIVY_CACHE_DIR = '/tmp/trivy-cache'
         GRYPE_DB_CACHE_DIR = '/tmp/grype-cache'
-        OWASP_DC_DATA_DIR = '/tmp/owasp-dc-data'
+        OWASP_DC_DATA_DIR = '/var/lib/jenkins/owasp-dc-data'
     }
 
     stages {
@@ -191,6 +191,7 @@ pipeline {
                                 --format JSON
                                 --project node-todo
                                 --failOnCVSS 7
+                                --data ${OWASP_DC_DATA_DIR}
                             """,
                             nvdCredentialsId: 'nvd-api-key'
                         )
