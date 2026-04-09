@@ -228,7 +228,7 @@ pipeline {
 
                                     docker run --rm \
                                         --network host \
-                                        -v $(pwd)/$REPORT_DIR:/zap/wrk \
+                                        -v "$(pwd)/$REPORT_DIR:/zap/wrk" \
                                         zaproxy/zap-stable \
                                         zap-baseline.py \
                                         -t http://localhost:8080 \
