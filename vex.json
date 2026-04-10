@@ -2,9 +2,7 @@
   "@context": "https://openvex.dev/ns/v0.2.0",
   "@id": "https://github.com/anuragverma/node-todo-cicd/vex/CVE-2025-7783",
   "author": "Admin User (admin)",
-  "role": "Security Reviewer",
-  "timestamp": "2026-04-09T00:00:00Z",
-  "last_updated": "2026-04-09T00:00:00Z",
+  "role": "Security Reviewer", "timestamp": "2026-04-09T00:00:00Z", "last_updated": "2026-04-09T00:00:00Z",
   "version": 1,
   "statements": [
     {
@@ -42,14 +40,11 @@
     {
       "vulnerability": {
         "@id": "https://www.cve.org/CVERecord?id=CVE-2025-15467",
-        "name": "CVE-2025-15467",
-        "aliases": [
-          "GHSA-37ch-88jc-xwx2"
-        ]
+        "name": "CVE-2026-4867"
       },
       "products": [
         {
-          "@id": "pkg:npm/path-to-regexp@0.1.7"
+          "@id": "pkg:npm/path-to-regexp@0.1.13"
         }
       ],
       "status": "not_affected"
