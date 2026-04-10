@@ -38,6 +38,21 @@
       "status_notes": "Finding ID 24 in DefectDojo. Reported by Trivy Scan on 2026-04-09. CWE-330 (Use of Insufficiently Random Values). Fixed versions: 2.5.4, 3.0.4, 4.0.4. Under active investigation to determine exploitability within this application's threat model. Last reviewed 2026-04-09 by Admin User (admin).",
       "action_statement": "Security team is assessing exploitability. Planned remediation: upgrade form-data to 2.5.4 or later.",
       "action_statement_date": "2026-04-09T00:00:00Z"
+    },
+    {
+      "vulnerability": {
+        "@id": "https://www.cve.org/CVERecord?id=CVE-2025-15467",
+        "name": "CVE-2025-15467",
+        "aliases": [
+          "GHSA-37ch-88jc-xwx2"
+        ]
+      },
+      "products": [
+        {
+          "@id": "pkg:npm/path-to-regexp@0.1.7"
+        }
+      ],
+      "status": "not_affected"
     }
   ]
 }
