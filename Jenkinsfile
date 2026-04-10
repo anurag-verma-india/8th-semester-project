@@ -310,13 +310,13 @@ pipeline {
                     sh '''
                         # DD_URL="http://192.168.56.43:8085"
                         DD_URL="http://10.81.2.34:8085"
-                        DD_PRODUCT="node-todo"
+                        DD_PRODUCT="node-todo-1"
                         # Stable engagement name so reimport can match against previous scans
                         DD_ENGAGEMENT="CI-Pipeline"
 
                         # SCAN_TYPE: DefectDojo parser type
                         # FILE:      path to the report
-                        # TEST_TITLE: optional — required when the same scan_type is uploaded
+                        # TEST_TITLE: optional - required when the same scan_type is uploaded
                         #             more than once (e.g. Trivy FS vs Trivy Image).
                         #             DefectDojo uses this to keep them as separate tests so
                         #             reimport compares FS-vs-FS and image-vs-image independently,
@@ -371,7 +371,7 @@ pipeline {
                                 exit 1
                             fi
                         }
-
+                        
                         upload "Hadolint Dockerfile check" "$REPORT_DIR/hadolint.json"
                         upload "Semgrep JSON Report"        "$REPORT_DIR/semgrep.json"
                         upload "Gitleaks Scan"              "$REPORT_DIR/gitleaks.json"
